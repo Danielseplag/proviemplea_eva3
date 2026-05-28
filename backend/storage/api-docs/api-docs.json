@@ -18,6 +18,7 @@
                     "Administración"
                 ],
                 "summary": "Listar solicitudes de contacto",
+                "description": "Retorna todas las solicitudes de contacto entre empresas y talentos. Límite: 60 requests/minuto.",
                 "operationId": "getContactos",
                 "parameters": [
                     {
@@ -47,6 +48,9 @@
                                 }
                             }
                         }
+                    },
+                    "429": {
+                        "description": "Demasiadas solicitudes. Límite: 60 req/min. Espere el tiempo indicado en el header Retry-After."
                     }
                 }
             },
@@ -200,6 +204,7 @@
                     "Empresas"
                 ],
                 "summary": "Listar empresas activas",
+                "description": "Retorna empresas activas con filtros opcionales. Límite: 60 requests/minuto.",
                 "operationId": "getEmpresas",
                 "parameters": [
                     {
@@ -226,6 +231,9 @@
                                 }
                             }
                         }
+                    },
+                    "429": {
+                        "description": "Demasiadas solicitudes. Límite: 60 req/min. Espere el tiempo indicado en el header Retry-After."
                     }
                 }
             },
@@ -384,7 +392,7 @@
                     "Personas"
                 ],
                 "summary": "Listar talentos en formato CV ciego",
-                "description": "Retorna perfiles sin datos personales identificables.",
+                "description": "Retorna perfiles sin datos personales identificables. Resultados recomendados para caché del lado cliente por 5 minutos. Límite: 60 requests/minuto.",
                 "operationId": "getPersonas",
                 "parameters": [
                     {
@@ -433,6 +441,9 @@
                                 }
                             }
                         }
+                    },
+                    "429": {
+                        "description": "Demasiadas solicitudes. Límite: 60 req/min. Espere el tiempo indicado en el header Retry-After."
                     }
                 }
             },
@@ -755,6 +766,13 @@
                     }
                 },
                 "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "rateLimitHeaders": {
+                "type": "apiKey",
+                "name": "X-RateLimit-Limit",
+                "in": "header"
             }
         }
     },

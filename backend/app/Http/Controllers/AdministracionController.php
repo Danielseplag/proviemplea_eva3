@@ -28,29 +28,35 @@ class AdministracionController extends Controller
 {
 
     #[OA\Get(
-        path: "/admin/contactos",
-        operationId: "getContactos",
-        summary: "Listar solicitudes de contacto",
-        tags: ["Administración"],
-        parameters: [
-            new OA\Parameter(
-                name: "estado",
-                in: "query",
-                required: false,
-                schema: new OA\Schema(
-                    type: "string",
-                    enum: ["pendiente", "contactado", "entrevista", "seleccionado", "no-seleccionado", "proceso-cerrado"]
-                )
+    path: "/admin/contactos",
+    operationId: "getContactos",
+    summary: "Listar solicitudes de contacto",
+    description: "Retorna todas las solicitudes de contacto entre empresas y talentos. Límite: 60 requests/minuto.",
+    tags: ["Administración"],
+    parameters: [
+        new OA\Parameter(
+            name: "estado",
+            in: "query",
+            required: false,
+            schema: new OA\Schema(
+                type: "string",
+                enum: ["pendiente", "contactado", "entrevista", "seleccionado", "no-seleccionado", "proceso-cerrado"]
             )
-        ],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: "Listado exitoso",
-                content: new OA\JsonContent(ref: "#/components/schemas/ContactoSolicitado")
-            )
-        ]
-    )]
+        )
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Listado exitoso",
+            content: new OA\JsonContent(ref: "#/components/schemas/ContactoSolicitado")
+        ),
+        new OA\Response(
+            response: 429,
+            description: "Demasiadas solicitudes. Límite: 60 req/min. Espere el tiempo indicado en el header Retry-After."
+        )
+    ]
+)]
+
 
 
     public function listarContactos(Request $request): JsonResponse

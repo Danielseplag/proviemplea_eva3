@@ -28,10 +28,11 @@ class EmpresaController extends Controller
 
 {
 
-    #[OA\Get(
+   #[OA\Get(
     path: "/empresas",
     operationId: "getEmpresas",
     summary: "Listar empresas activas",
+    description: "Retorna empresas activas con filtros opcionales. Límite: 60 requests/minuto.",
     tags: ["Empresas"],
     parameters: [
         new OA\Parameter(name: "tipo_empresa", in: "query", required: false,
@@ -41,9 +42,14 @@ class EmpresaController extends Controller
     responses: [
         new OA\Response(response: 200, description: "Listado exitoso",
             content: new OA\JsonContent(ref: "#/components/schemas/Empresa")
+        ),
+        new OA\Response(
+            response: 429,
+            description: "Demasiadas solicitudes. Límite: 60 req/min. Espere el tiempo indicado en el header Retry-After."
         )
     ]
 )]
+
 
 
     public function index(Request $request): JsonResponse

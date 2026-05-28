@@ -28,42 +28,47 @@ class PersonaController extends Controller
 
 {
     #[OA\Get(
-        path: "/personas",
-        operationId: "getPersonas",
-        summary: "Listar talentos en formato CV ciego",
-        description: "Retorna perfiles sin datos personales identificables.",
-        tags: ["Personas"],
-        parameters: [
-            new OA\Parameter(
-                name: "validado",
-                in: "query",
-                required: false,
-                schema: new OA\Schema(type: "boolean")
-            ),
-            new OA\Parameter(
-                name: "nivel_educacional",
-                in: "query",
-                required: false,
-                schema: new OA\Schema(type: "string", enum: ["basica", "media", "tecnica", "universitaria", "postgrado"])
+    path: "/personas",
+    operationId: "getPersonas",
+    summary: "Listar talentos en formato CV ciego",
+    description: "Retorna perfiles sin datos personales identificables. Resultados recomendados para caché del lado cliente por 5 minutos. Límite: 60 requests/minuto.",
+    tags: ["Personas"],
+    parameters: [
+        new OA\Parameter(
+            name: "validado",
+            in: "query",
+            required: false,
+            schema: new OA\Schema(type: "boolean")
+        ),
+        new OA\Parameter(
+            name: "nivel_educacional",
+            in: "query",
+            required: false,
+            schema: new OA\Schema(type: "string", enum: ["basica", "media", "tecnica", "universitaria", "postgrado"])
+        )
+    ],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: "Listado exitoso",
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "success", type: "boolean", example: true),
+                    new OA\Property(
+                        property: "data",
+                        type: "array",
+                        items: new OA\Items(ref: "#/components/schemas/Persona")
+                    )
+                ]
             )
-        ],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: "Listado exitoso",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "success", type: "boolean", example: true),
-                        new OA\Property(
-                            property: "data",
-                            type: "array",
-                            items: new OA\Items(ref: "#/components/schemas/Persona")
-                        )
-                    ]
-                )
-            )
-        ]
-    )]
+        ),
+        new OA\Response(
+            response: 429,
+            description: "Demasiadas solicitudes. Límite: 60 req/min. Espere el tiempo indicado en el header Retry-After."
+        )
+    ]
+)]
+
     public function index(Request $request): JsonResponse
     {
         $query = Persona::where('activo', true);

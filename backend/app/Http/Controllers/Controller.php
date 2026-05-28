@@ -18,6 +18,14 @@ use OpenApi\Attributes as OA;
 #[OA\Tag(name: "Personas",        description: "Gestión de perfiles de talentos")]
 #[OA\Tag(name: "Empresas",        description: "Gestión de empresas empleadoras")]
 #[OA\Tag(name: "Administración",  description: "Gestión administrativa")]
+
+#[OA\SecurityScheme(
+    securityScheme: "rateLimitHeaders",
+    type: "apiKey",
+    in: "header",
+    name: "X-RateLimit-Limit"
+)]
+
 abstract class Controller
 {
     use ApiResponse;
