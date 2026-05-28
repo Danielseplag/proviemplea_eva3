@@ -1,0 +1,779 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "ProviEmplea API",
+        "description": "API REST para la plataforma de empleo ProviEmplea. Permite gestionar talentos, empresas y procesos de selección con curriculum ciego.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080/api",
+            "description": "Servidor de desarrollo local"
+        }
+    ],
+    "paths": {
+        "/admin/contactos": {
+            "get": {
+                "tags": [
+                    "Administración"
+                ],
+                "summary": "Listar solicitudes de contacto",
+                "operationId": "getContactos",
+                "parameters": [
+                    {
+                        "name": "estado",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pendiente",
+                                "contactado",
+                                "entrevista",
+                                "seleccionado",
+                                "no-seleccionado",
+                                "proceso-cerrado"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactoSolicitado"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Administración"
+                ],
+                "summary": "Registrar solicitud de contacto",
+                "operationId": "crearContacto",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "empresa_id",
+                                    "persona_id"
+                                ],
+                                "properties": {
+                                    "empresa_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "persona_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "notas_admin": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contacto creado"
+                    },
+                    "409": {
+                        "description": "Ya existe solicitud activa"
+                    },
+                    "422": {
+                        "description": "Errores de validación"
+                    }
+                }
+            }
+        },
+        "/admin/contactos/{id}/estado": {
+            "patch": {
+                "tags": [
+                    "Administración"
+                ],
+                "summary": "Actualizar estado del proceso",
+                "operationId": "actualizarEstado",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "estado"
+                                ],
+                                "properties": {
+                                    "estado": {
+                                        "type": "string",
+                                        "enum": [
+                                            "pendiente",
+                                            "contactado",
+                                            "entrevista",
+                                            "seleccionado",
+                                            "no-seleccionado",
+                                            "proceso-cerrado"
+                                        ]
+                                    },
+                                    "notas_admin": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Estado actualizado"
+                    },
+                    "404": {
+                        "description": "Contacto no encontrado"
+                    }
+                }
+            }
+        },
+        "/admin/estadisticas": {
+            "get": {
+                "tags": [
+                    "Administración"
+                ],
+                "summary": "Estadísticas generales de la plataforma",
+                "operationId": "getEstadisticas",
+                "responses": {
+                    "200": {
+                        "description": "Estadísticas generadas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_personas": {
+                                            "type": "integer",
+                                            "example": 45
+                                        },
+                                        "personas_validadas": {
+                                            "type": "integer",
+                                            "example": 38
+                                        },
+                                        "total_empresas": {
+                                            "type": "integer",
+                                            "example": 12
+                                        },
+                                        "contactos_exitosos": {
+                                            "type": "integer",
+                                            "example": 15
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/empresas": {
+            "get": {
+                "tags": [
+                    "Empresas"
+                ],
+                "summary": "Listar empresas activas",
+                "operationId": "getEmpresas",
+                "parameters": [
+                    {
+                        "name": "tipo_empresa",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "contratacion-directa",
+                                "est",
+                                "outsourcing"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Empresa"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Empresas"
+                ],
+                "summary": "Registrar nueva empresa",
+                "operationId": "createEmpresa",
+                "responses": {
+                    "201": {
+                        "description": "Empresa creada"
+                    },
+                    "422": {
+                        "description": "Errores de validación"
+                    }
+                }
+            }
+        },
+        "/empresas/{id}": {
+            "get": {
+                "tags": [
+                    "Empresas"
+                ],
+                "summary": "Obtener empresa por ID",
+                "operationId": "getEmpresa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Empresa encontrada"
+                    },
+                    "404": {
+                        "description": "No encontrada"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Empresas"
+                ],
+                "summary": "Actualizar empresa",
+                "operationId": "updateEmpresa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Empresa actualizada"
+                    },
+                    "404": {
+                        "description": "No encontrada"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Empresas"
+                ],
+                "summary": "Desactivar empresa",
+                "operationId": "deleteEmpresa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Empresa desactivada"
+                    },
+                    "404": {
+                        "description": "No encontrada"
+                    }
+                }
+            }
+        },
+        "/empresas/{id}/validar": {
+            "patch": {
+                "tags": [
+                    "Empresas"
+                ],
+                "summary": "Validar empresa",
+                "operationId": "validarEmpresa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Empresa validada"
+                    },
+                    "404": {
+                        "description": "No encontrada"
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Verificar estado del servicio",
+                "description": "Verifica que la API está operativa.",
+                "operationId": "healthCheck",
+                "responses": {
+                    "200": {
+                        "description": "Servicio operativo",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "status": "online",
+                                    "service": "ProviEmplea API",
+                                    "version": "1.0.0"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/personas": {
+            "get": {
+                "tags": [
+                    "Personas"
+                ],
+                "summary": "Listar talentos en formato CV ciego",
+                "description": "Retorna perfiles sin datos personales identificables.",
+                "operationId": "getPersonas",
+                "parameters": [
+                    {
+                        "name": "validado",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "nivel_educacional",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "basica",
+                                "media",
+                                "tecnica",
+                                "universitaria",
+                                "postgrado"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Persona"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Personas"
+                ],
+                "summary": "Registrar nuevo talento",
+                "operationId": "createPersona",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "talento@ejemplo.cl"
+                                    },
+                                    "nivel_educacional": {
+                                        "type": "string",
+                                        "enum": [
+                                            "basica",
+                                            "media",
+                                            "tecnica",
+                                            "universitaria",
+                                            "postgrado"
+                                        ]
+                                    },
+                                    "anios_experiencia": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "tipo_jornada": {
+                                        "type": "string",
+                                        "enum": [
+                                            "completa",
+                                            "part-time",
+                                            "por-horas"
+                                        ]
+                                    },
+                                    "modalidad": {
+                                        "type": "string",
+                                        "enum": [
+                                            "presencial",
+                                            "remoto",
+                                            "hibrido"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Persona creada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Persona"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Errores de validación"
+                    }
+                }
+            }
+        },
+        "/personas/{id}": {
+            "get": {
+                "tags": [
+                    "Personas"
+                ],
+                "summary": "Obtener persona por ID",
+                "operationId": "getPersona",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Persona encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Persona"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrada"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Personas"
+                ],
+                "summary": "Actualizar persona",
+                "operationId": "updatePersona",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Persona actualizada"
+                    },
+                    "404": {
+                        "description": "No encontrada"
+                    },
+                    "422": {
+                        "description": "Errores de validación"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Personas"
+                ],
+                "summary": "Desactivar persona",
+                "operationId": "deletePersona",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Persona desactivada"
+                    },
+                    "404": {
+                        "description": "No encontrada"
+                    }
+                }
+            }
+        },
+        "/personas/{id}/validar": {
+            "patch": {
+                "tags": [
+                    "Personas"
+                ],
+                "summary": "Validar perfil de persona",
+                "operationId": "validarPersona",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Persona validada"
+                    },
+                    "404": {
+                        "description": "No encontrada"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ContactoSolicitado": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "empresa_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "persona_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "estado": {
+                        "type": "string",
+                        "example": "pendiente"
+                    },
+                    "notas_admin": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "fecha_contacto": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "fecha_entrevista": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "fecha_resultado": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Empresa": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "nombre_empresa": {
+                        "type": "string",
+                        "example": "TechCorp SpA"
+                    },
+                    "rut_empresa": {
+                        "type": "string",
+                        "example": "76123456-7"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "tipo_empresa": {
+                        "type": "string",
+                        "example": "contratacion-directa"
+                    },
+                    "contacto_nombre": {
+                        "type": "string",
+                        "example": "Ana López"
+                    },
+                    "contacto_email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "validado": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "activo": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "Persona": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "codigo_talento": {
+                        "type": "string",
+                        "example": "PROV-2026-A1B2"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "nivel_educacional": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "anios_experiencia": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "tipo_jornada": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "modalidad": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "validado": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "activo": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "porcentaje_completitud": {
+                        "type": "integer",
+                        "example": 73
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Health",
+            "description": "Estado del sistema"
+        },
+        {
+            "name": "Personas",
+            "description": "Gestión de perfiles de talentos"
+        },
+        {
+            "name": "Empresas",
+            "description": "Gestión de empresas empleadoras"
+        },
+        {
+            "name": "Administración",
+            "description": "Gestión administrativa"
+        }
+    ]
+}
