@@ -243,9 +243,89 @@
                 ],
                 "summary": "Registrar nueva empresa",
                 "operationId": "createEmpresa",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre_empresa",
+                                    "rut_empresa",
+                                    "email",
+                                    "tipo_empresa",
+                                    "contacto_nombre",
+                                    "contacto_email"
+                                ],
+                                "properties": {
+                                    "nombre_empresa": {
+                                        "type": "string",
+                                        "example": "TechCorp SpA"
+                                    },
+                                    "rut_empresa": {
+                                        "type": "string",
+                                        "example": "76123456-7"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "contacto@techcorp.cl"
+                                    },
+                                    "tipo_empresa": {
+                                        "type": "string",
+                                        "enum": [
+                                            "contratacion-directa",
+                                            "est",
+                                            "outsourcing"
+                                        ]
+                                    },
+                                    "logo_url": {
+                                        "type": "string",
+                                        "format": "url",
+                                        "nullable": true
+                                    },
+                                    "rubro": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "presentacion": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "beneficios": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "nullable": true
+                                    },
+                                    "contacto_nombre": {
+                                        "type": "string",
+                                        "example": "Ana López"
+                                    },
+                                    "contacto_email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "contacto_telefono": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
-                        "description": "Empresa creada"
+                        "description": "Empresa creada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Empresa"
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "description": "Errores de validación"

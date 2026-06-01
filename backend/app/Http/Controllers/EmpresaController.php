@@ -69,8 +69,29 @@ class EmpresaController extends Controller
     operationId: "createEmpresa",
     summary: "Registrar nueva empresa",
     tags: ["Empresas"],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ["nombre_empresa", "rut_empresa", "email", "tipo_empresa", "contacto_nombre", "contacto_email"],
+            properties: [
+                new OA\Property(property: "nombre_empresa", type: "string", example: "TechCorp SpA"),
+                new OA\Property(property: "rut_empresa", type: "string", example: "76123456-7"),
+                new OA\Property(property: "email", type: "string", format: "email", example: "contacto@techcorp.cl"),
+                new OA\Property(property: "tipo_empresa", type: "string", enum: ["contratacion-directa", "est", "outsourcing"]),
+                new OA\Property(property: "logo_url", type: "string", format: "url", nullable: true),
+                new OA\Property(property: "rubro", type: "string", nullable: true),
+                new OA\Property(property: "presentacion", type: "string", nullable: true),
+                new OA\Property(property: "beneficios", type: "array", items: new OA\Items(type: "string"), nullable: true),
+                new OA\Property(property: "contacto_nombre", type: "string", example: "Ana López"),
+                new OA\Property(property: "contacto_email", type: "string", format: "email"),
+                new OA\Property(property: "contacto_telefono", type: "string", nullable: true),
+            ]
+        )
+    ),
     responses: [
-        new OA\Response(response: 201, description: "Empresa creada"),
+        new OA\Response(response: 201, description: "Empresa creada",
+            content: new OA\JsonContent(ref: "#/components/schemas/Empresa")
+        ),
         new OA\Response(response: 422, description: "Errores de validación")
     ]
 )]
@@ -80,17 +101,16 @@ class EmpresaController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nombre_empresa'    => 'required|string|max:255',
-            'rut_empresa'       => 'required|string|max:20|unique:empresas,rut_empresa',
-            'email'             => 'required|email|unique:empresas,email',
-            'logo_url'          => 'nullable|url',
-            'rubro'             => 'nullable|string|max:100',
+            'rut_empresa'       => 'required|string|max:20|unique:empresas,rut_empresa,NULL,id,activo,1',
+            'email'             => 'required|email|unique:empresas,email,NULL,id,activo,1',
             'tipo_empresa'      => 'required|in:contratacion-directa,est,outsourcing',
-            'presentacion'      => 'nullable|string',
-            'beneficios'        => 'nullable|array',
             'contacto_nombre'   => 'required|string|max:100',
             'contacto_email'    => 'required|email',
+            'logo_url'          => 'nullable|url',
+            'rubro'             => 'nullable|string|max:100',
+            'presentacion'      => 'nullable|string',
+            'beneficios'        => 'nullable|array',
             'contacto_telefono' => 'nullable|string|max:20',
-
         ]);
 
         if ($validator->fails()) {
@@ -155,8 +175,8 @@ class EmpresaController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nombre_empresa'    => 'sometimes|string|max:255',
-            'rut_empresa'       => 'sometimes|string|max:20|unique:empresas,rut_empresa,' . $id,
-            'email'             => 'sometimes|email|unique:empresas,email,' . $id,
+            'rut_empresa'       => 'sometimes|string|max:20|unique:empresas,rut_empresa,' . $id . ',id,activo,1',
+            'email'             => 'sometimes|email|unique:empresas,email,' . $id . ',id,activo,1',
             'logo_url'          => 'nullable|url',
             'rubro'             => 'nullable|string|max:100',
             'tipo_empresa'      => 'sometimes|in:contratacion-directa,est,outsourcing',

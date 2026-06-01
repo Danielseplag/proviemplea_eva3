@@ -116,7 +116,7 @@ class PersonaController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'email'                => 'required|email|unique:personas,email',
+            'email'                => 'required|email|unique:personas,email,NULL,id,activo,1',
             'telefono'             => 'nullable|string|max:15',
             'resumen'              => 'nullable|string',
             'nivel_educacional'    => 'nullable|in:basica,media,tecnica,universitaria,postgrado',
@@ -168,7 +168,7 @@ class PersonaController extends Controller
     {
         $persona = Persona::find($id);
 
-        if (!$persona) {
+        if (!$persona || !$persona->activo) {
             return $this->errorResponse('Persona no encontrada.', 404);
         }
 
@@ -197,12 +197,12 @@ class PersonaController extends Controller
     {
         $persona = Persona::find($id);
 
-        if (!$persona) {
+        if (!$persona || !$persona->activo) {
             return $this->errorResponse('Persona no encontrada.', 404);
         }
 
         $validator = Validator::make($request->all(), [
-            'email'                => 'sometimes|email|unique:personas,email,' . $persona->id,
+            'email'                => 'sometimes|email|unique:personas,email,' . $persona->id . ',id,activo,1',
             'telefono'             => 'nullable|string|max:15',
             'resumen'              => 'nullable|string',
             'nivel_educacional'    => 'nullable|in:basica,media,tecnica,universitaria,postgrado',
@@ -285,7 +285,7 @@ class PersonaController extends Controller
     {
         $persona = Persona::find($id);
 
-        if (!$persona) {
+        if (!$persona || !$persona->activo) {
             return $this->errorResponse('Persona no encontrada.', 404);
         }
 
